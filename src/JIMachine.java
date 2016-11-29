@@ -17,7 +17,7 @@ public class JIMachine {
         EventQueue.invokeLater(() -> {
             JFrame frame = new ImageFrame();
             frame.setTitle("JIMachine");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             frame.pack();
             frame.setVisible(true);
         });

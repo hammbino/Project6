@@ -1,6 +1,6 @@
-/**
+/*
  * Project6
- * Created by jeffreyhammond on 11/29/16.
+ * Created by Jeffrey Hammond on 11/29/16.
  */
 
 import javax.imageio.ImageIO;
@@ -22,63 +22,63 @@ class ImageFrame extends JFrame {
 
     ImageFrame() {
         setSize(getPreferredSize());
-        JPanel buttonPanel = new JPanel();
-        JPanel picPanel = new ImagePanel();
+        add(new ButtonPanel(), BorderLayout.SOUTH);
+        add(new ImagePanel());
+    }
 
-        JButton openButton = new JButton("Open");
+    private class ButtonPanel extends JPanel {
+        ButtonPanel() {
 
-//Todo this needs some love and a refactor
-
-        openButton.addActionListener(event -> {
-            JFileChooser chooser = new JFileChooser();
-            chooser.setCurrentDirectory(new File("."));
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("*.Images", "jpg", "gif", "png");
-            chooser.addChoosableFileFilter(filter);
-            int result = chooser.showOpenDialog(ImageFrame.this);
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = chooser.getSelectedFile();
-                try {
-                    image = ImageIO.read(new File(selectedFile.getAbsolutePath()));
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("Could not open file.");
+            //Todo this needs some love and a refactor
+            JButton openButton = new JButton("Open");
+            openButton.addActionListener(event -> {
+                JFileChooser chooser = new JFileChooser();
+                chooser.setCurrentDirectory(new File("."));
+                FileNameExtensionFilter filter = new FileNameExtensionFilter("*.jpeg", "*.jpg", "*.gif", "*.png");
+                chooser.addChoosableFileFilter(filter);
+                int result = chooser.showOpenDialog(ImageFrame.this);
+                if (result == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = chooser.getSelectedFile();
+                    try {
+                        image = ImageIO.read(new File(selectedFile.getAbsolutePath()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        System.out.println("Could not open file.");
+                    }
+                    getParent().repaint();
+                } else if (result == JFileChooser.CANCEL_OPTION) {
+                    System.out.println("No File Selected");
                 }
-                repaint();
-            } else if (result == JFileChooser.CANCEL_OPTION) {
-                System.out.println("No File Selected");
-            }
-        });
+            });
 
-        JButton zoomInButton = new JButton("Zoom In");
-        zoomInButton.addActionListener(e -> {
-            zoom += .25;
-            repaint();
+            JButton zoomInButton = new JButton("Zoom In");
+            zoomInButton.addActionListener(e -> {
+                zoom += .25;
+                getParent().repaint();
 
-        });
+            });
 
-        JButton defaultSizeButton = new JButton("100%");
-        defaultSizeButton.addActionListener(e -> {
-            zoom = 1;
-            repaint();
-        });
+            JButton defaultSizeButton = new JButton("100%");
+            defaultSizeButton.addActionListener(e -> {
+                zoom = 1;
+                getParent().repaint();
+            });
 
-        JButton zoomOutButton = new JButton("Zoom Out");
-        zoomOutButton.addActionListener(e -> {
-            zoom -= .25;
-            repaint();
-        });
+            JButton zoomOutButton = new JButton("Zoom Out");
+            zoomOutButton.addActionListener(e -> {
+                zoom -= .25;
+                getParent().repaint();
+            });
 
-        JButton quitButton = new JButton("Quit");
-        quitButton.addActionListener(e -> System.exit(0));
+            JButton quitButton = new JButton("Quit");
+            quitButton.addActionListener(e -> System.exit(0));
 
-        buttonPanel.add(openButton);
-        buttonPanel.add(zoomInButton);
-        buttonPanel.add(defaultSizeButton);
-        buttonPanel.add(zoomOutButton);
-        buttonPanel.add(quitButton);
-
-        add(buttonPanel, BorderLayout.SOUTH);
-        add(picPanel);
+            add(openButton);
+            add(zoomInButton);
+            add(defaultSizeButton);
+            add(zoomOutButton);
+            add(quitButton);
+        }
     }
 
     /**
