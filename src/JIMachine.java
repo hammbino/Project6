@@ -10,9 +10,6 @@
 //Project 6 - JIMachine
 
 import java.awt.*;
-import java.io.File;
-import java.io.FilenameFilter;
-import java.util.ArrayList;
 import javax.swing.*;
 
 public class JIMachine {

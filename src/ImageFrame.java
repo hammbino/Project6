@@ -7,14 +7,15 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
 import java.awt.Graphics;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 /**
  * A frame to view images
@@ -30,7 +31,7 @@ class ImageFrame extends JFrame {
     private JLabel picLabel;
     private BufferedImage image;
     private float zoom = 1;
-    FileNameExtensionFilter filter = new FileNameExtensionFilter("*.jpeg", "*.jpg", "*.gif", "*.png");
+//    FileNameExtensionFilter filter = new FileNameExtensionFilter("jpeg", "jpg", "gif", "png");
     // End of variables declaration
 
 
@@ -42,7 +43,7 @@ class ImageFrame extends JFrame {
             e.printStackTrace();
             System.out.println("Could not open file.");
         }
-//        setSize(getPreferredSize());
+        setSize(getPreferredSize());
         add(new ButtonPanel(), BorderLayout.SOUTH);
         add(new ImagePanel());
         add(new ImageNavigationPanel(), BorderLayout.WEST);
@@ -70,7 +71,13 @@ class ImageFrame extends JFrame {
                         e.printStackTrace();
                         System.out.println("Could not open file.");
                     }
+                    ;
                     getJpegs(chooser.getCurrentDirectory().toString());
+                    for (int i = 0; i < files.length; i++ ) {
+                        if (files[i].toString().equals(chooser.getSelectedFile().toString())) {
+                            position = i;
+                        }
+                    }
                     getParent().repaint();
                 } else if (result == JFileChooser.CANCEL_OPTION) {
                     System.out.println("No File Selected");
@@ -110,99 +117,52 @@ class ImageFrame extends JFrame {
 
     private class ImageNavigationPanel extends JPanel {
         ImageNavigationPanel() {
+            JButton previousButton = new JButton("Previous");
+            previousButton.addActionListener(e -> {
+                zoom = 1;
+                position--;
+                if(position < 0 || position >= files.length ) {
+                    position = files.length -1;
+                }
+                try {
+                    image = ImageIO.read(new File(files[position].getAbsolutePath()));
+                } catch (IOException evt) {
+                    evt.printStackTrace();
+                    System.out.println("Could not open file.");
+                }
+                setSize(getPreferredSize());
+                getParent().repaint();
+              });
+            JButton nextButton = new JButton("Next");
 
-            Action nextImageAction = new getNextImage("Next");
-            Action previousImageAction = new getPreviousImage("Previous");
+            nextButton.addActionListener(e -> {
+                zoom = 1;
+                position++;
+                if(position >= files.length || position < 0) {
+                    position = 0;
+                }
+                try {
+                    image = ImageIO.read(new File(files[position].getAbsolutePath()));
+                } catch (IOException evt) {
+                    evt.printStackTrace();
+                    System.out.println("Could not open file.");
+                }
+                getParent().repaint();
 
-            add(new JButton(previousImageAction));
-            add(new JButton(nextImageAction));
-
-            InputMap imap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
-            imap.put(KeyStroke.getKeyStroke("RIGHT"), "Next");
-            imap.put(KeyStroke.getKeyStroke("LEFT"), "Previous");
-
-            ActionMap amap = getActionMap();
-            amap.put("Next", nextImageAction);
-            amap.put("Previous", previousImageAction);
-
-
-//            JButton previousButton = new JButton("Previous");
-//            previousButton.addActionListener(e -> {
-//                zoom = 1;
-//                position--;
-//                if(position < 0 ) {
-//                    position = files.length -1;
-//                }
-//                try {
-//                    image = ImageIO.read(new File(files[position].getAbsolutePath()));
-//                } catch (IOException evt) {
-//                    evt.printStackTrace();
-//                    System.out.println("Could not open file.");
-//                }
-//                getParent().repaint();
-//              });
-//            JButton nextButton = new JButton("Next");
-//
-//            nextButton.addActionListener(e -> getNextImage("Next"));
+            });
 
             JButton thumbnailButton = new JButton("View Thumbnails");
 
-
+            add(previousButton);
+            add(nextButton);
             add(thumbnailButton);
 
             thumbnailButton.setEnabled(false);
 
-//            nextButton.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "getNext");
-//            nextButton.getActionMap().put("getNext", nextButton.getAction());
+            nextButton.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "getNext");
+            nextButton.getActionMap().put("getNext", nextButton.getAction());
         }
 
-    }
-
-    public class getNextImage extends AbstractAction {
-
-        public getNextImage(String name) {
-            putValue(Action.NAME, name);
-            putValue(Action.SHORT_DESCRIPTION, "Click to see next image");
-        }
-
-        public void actionPerformed(ActionEvent event) {
-            zoom = 1;
-            position++;
-            if(position == files.length) {
-                position = 0;
-            }
-            try {
-                image = ImageIO.read(new File(files[position].getAbsolutePath()));
-            } catch (IOException evt) {
-                evt.printStackTrace();
-                System.out.println("Could not open file.");
-            }
-            getParent().repaint();
-        }
-    }
-
-    public class getPreviousImage extends AbstractAction {
-
-        public getPreviousImage(String name) {
-            putValue(Action.NAME, name);
-            putValue(Action.SHORT_DESCRIPTION, "Click to see next image");
-        }
-
-        public void actionPerformed(ActionEvent event) {
-            zoom = 1;
-            position--;
-            if (position < 0) {
-                position = files.length - 1;
-            }
-            try {
-                image = ImageIO.read(new File(files[position].getAbsolutePath()));
-            } catch (IOException evt) {
-                evt.printStackTrace();
-                System.out.println("Could not open file.");
-            }
-            getParent().repaint();
-
-        }
     }
 
     /**
@@ -274,34 +234,3 @@ class ImageFrame extends JFrame {
 
     }
 }
-
-//
-//    JButton previousButton = new JButton("Previous");
-//            previousButton.addActionListener(e -> {
-//                    zoom = 1;
-//                    position--;
-//                    if(position < 0 ) {
-//        position = files.length -1;
-//        }
-//        try {
-//        image = ImageIO.read(new File(files[position].getAbsolutePath()));
-//        } catch (IOException evt) {
-//        evt.printStackTrace();
-//        System.out.println("Could not open file.");
-//        }
-//        getParent().repaint();
-//        });
-//        JButton nextButton = new JButton("Next");
-//
-//        nextButton.addActionListener(e -> getNextImage("Next"));
-//
-//        JButton thumbnailButton = new JButton("View Thumbnails");
-//
-//
-//        add(thumbnailButton);
-//
-//        thumbnailButton.setEnabled(false);
-//
-//        nextButton.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "getNext");
-//        nextButton.getActionMap().put("getNext", nextButton.getAction());
-//        }
