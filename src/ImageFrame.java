@@ -20,12 +20,12 @@ class ImageFrame extends JFrame {
     private int position = 0; //Initial position is 0
     private boolean thumbnailViewEnabled = false;
     private File [] files; //Array to hold the file names
-    BufferedImage image;
+    private BufferedImage image;
     private int fileLocal = 0;
-    BufferedImage thumbnail1;
-    BufferedImage thumbnail2;
-    BufferedImage thumbnail3;
-    BufferedImage thumbnail4;
+    private JLabel thumbnail1 = new JLabel();
+    private JLabel thumbnail2 = new JLabel();
+    private JLabel thumbnail3 = new JLabel();
+    private JLabel thumbnail4 = new JLabel();
     private double zoom = 1;
 
     ImageFrame() {
@@ -377,7 +377,11 @@ class ImageFrame extends JFrame {
         ThumbnailPanel() {
             setVisible(false);
             setLayout(new GridLayout(2, 2));
-//            setThumbnails();
+            add(thumbnail1);
+            add(thumbnail2);
+            add(thumbnail3);
+            add(thumbnail4);
+            setThumbnails();
         }
 
 
@@ -410,48 +414,20 @@ class ImageFrame extends JFrame {
                 if (fileLocal < files.length) {
                     switch (i) {
                         case 0:
-                            try {
-                                thumbnail1 = ImageIO.read(new File(files[position].getAbsolutePath()));
-                            } catch (IOException evt) {
-                                evt.printStackTrace();
-                                System.out.println("Could not open file.");
-                            }
-                            position++;
-//                            thumbnail1.s
-//                                    setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail1.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
                             break;
                         case 1:
-                            try {
-                                thumbnail2 = ImageIO.read(new File(files[position].getAbsolutePath()));
-                            } catch (IOException evt) {
-                                evt.printStackTrace();
-                                System.out.println("Could not open file.");
-                            }
-                            position++;
-//                            thumbnail2.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail2.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
                             break;
                         case 2:
-                            try {
-                                thumbnail3 = ImageIO.read(new File(files[position].getAbsolutePath()));
-                            } catch (IOException evt) {
-                                evt.printStackTrace();
-                                System.out.println("Could not open file.");
-                            }
-                            position++;
-//                            thumbnail3.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail3.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
                             break;
                         case 3:
-                            try {
-                                thumbnail4 = ImageIO.read(new File(files[position].getAbsolutePath()));
-                            } catch (IOException evt) {
-                                evt.printStackTrace();
-                                System.out.println("Could not open file.");
-                            }
-                            position++;
-//                            thumbnail4.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail4.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
                             break;
                     }
-                    position++;
+                }else {
+                    fileLocal++;
                 }
             }
 
