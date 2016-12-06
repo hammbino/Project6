@@ -10,6 +10,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.StreamCorruptedException;
 
 /**
  * A frame to view images
@@ -17,31 +18,32 @@ import java.io.IOException;
 class ImageFrame extends JFrame {
 
     private int position = 0; //Initial position is 0
+    private boolean thumbnailViewEnabled = false;
     private File [] files; //Array to hold the file names
-    private BufferedImage image;
+    BufferedImage image;
+    private int fileLocal = 0;
+    BufferedImage thumbnail1;
+    BufferedImage thumbnail2;
+    BufferedImage thumbnail3;
+    BufferedImage thumbnail4;
     private double zoom = 1;
 
     ImageFrame() {
         setSize(getPreferredSize());
         getJpegs(".");//TODO handle if FILES is empty
-        try {
-            image = ImageIO.read(new File(files[0].getAbsolutePath()));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.out.println("Could not open file.");
-        }
+        setImage();
 
         JPanel imagePanel = new ImagePanel ();
-        JPanel thumbnailPanel = new ThumbnailPanel ();
+        JPanel thumbnailPanel = new ThumbnailPanel();
 
         JPanel imageSizingPanel = new JPanel();
         imageSizingPanel.setLayout(new FlowLayout());
 
         JButton zoomInButton = new JButton("Zoom In");
         zoomInButton.addActionListener(e -> {
+//            if (zoom <= 0)
+//                zoom = .25;
             zoom += .25;
-            if (zoom < 0)
-                zoom = .5;
             repaint();
 
         });
@@ -54,8 +56,8 @@ class ImageFrame extends JFrame {
 
         JButton zoomOutButton = new JButton("Zoom Out");
         zoomOutButton.addActionListener(e -> {
-            zoom -= .25;
-            if (zoom > 0) {
+            if (zoom > .25) {
+                zoom -= .25;
                 repaint();
             } else {
                 System.out.println("Maximum zoom out reached"); //TODO add dialogue box
@@ -80,12 +82,8 @@ class ImageFrame extends JFrame {
             if(position < 0 || position >= files.length ) {
                 position = files.length -1;
             }
-            try {
-                image = ImageIO.read(new File(files[position].getAbsolutePath()));
-            } catch (IOException evt) {
-                evt.printStackTrace();
-                System.out.println("Could not open file.");
-            }
+//            setThumbnails();
+            setImage();
             repaint();
         });
 
@@ -96,14 +94,9 @@ class ImageFrame extends JFrame {
             if(position < 0 || position >= files.length ) {
                 position = 0;
             }
-            try {
-                image = ImageIO.read(new File(files[position].getAbsolutePath()));
-            } catch (IOException evt) {
-                evt.printStackTrace();
-                System.out.println("Could not open file.");
-            }
+//            setThumbnails();
+            setImage();
             repaint();
-
         });
 
 
@@ -111,20 +104,31 @@ class ImageFrame extends JFrame {
         imageNavigationPanel.add(nextButton);
 
 
-
+        JButton singleImageButton = new JButton("View Image");
         JButton thumbnailButton = new JButton("View Thumbnails");
+
         thumbnailButton.addActionListener(e -> {
             imagePanel.setVisible(false);
             thumbnailPanel.setVisible(true);
+            zoomInButton.setEnabled(false);
+            zoomOutButton.setEnabled(false);
+            defaultSizeButton.setEnabled(false);
+            thumbnailButton.setEnabled(false);
+            singleImageButton.setEnabled(true);
             getContentPane().add(thumbnailPanel);
             getContentPane().remove(imagePanel);
             repaint();
         });
 
-        JButton singleImageButton = new JButton("View Image");
+
         singleImageButton.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
+            zoomInButton.setEnabled(true);
+            zoomOutButton.setEnabled(true);
+            defaultSizeButton.setEnabled(true);
+            singleImageButton.setEnabled(false);
+            thumbnailButton.setEnabled(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
             repaint();
@@ -192,15 +196,17 @@ class ImageFrame extends JFrame {
         contentPane.add(imageSizingPanel, BorderLayout.NORTH);
         contentPane.add(imageViewPanel, BorderLayout.WEST);
 //        contentPane.add(imageView, BorderLayout.CENTER);
-        contentPane.add(thumbnailPanel, BorderLayout.CENTER);
+//        contentPane.add(thumbnailPanel, BorderLayout.CENTER);
         contentPane.add(imagePanel, BorderLayout.CENTER);
 
         contentPane.add(imageNavigationPanel, BorderLayout.SOUTH);
 //        contentPane.add(new ImageNavigationPanel(), BorderLayout.SOUTH);
         contentPane.add(albumButtonPanel, BorderLayout.EAST);
 
-
+        singleImageButton.setEnabled(false);
     }
+
+
 
 //    private class ButtonPanel extends JPanel {
 //        ButtonPanel() {
@@ -334,28 +340,6 @@ class ImageFrame extends JFrame {
 //        }
 //    }
 
-//    class FileImage extends JPanel {
-//        JPanel cards; //a panel that uses CardLayout
-//        FileImage() {
-//            //Create the "imageViews".
-//            JPanel singleView = new JPanel();
-//            singleView.add(new ImagePanel());
-//
-//            JPanel thumbnailView = new JPanel();
-//            thumbnailView.add(new ThumbnailPanel());
-//
-//            //Create the panel that contains the "cards".
-//            cards = new JPanel(new CardLayout());
-//            cards.add(singleView);
-//            cards.add(thumbnailView);
-//        }
-//
-//        public void changeCardView() {
-//            CardLayout cl = (CardLayout) (cards.getLayout());
-//            cl.next(cards);
-//        }
-//    }
-
     /**
      * A component that displays an image
      */
@@ -366,10 +350,20 @@ class ImageFrame extends JFrame {
         public void paintComponent(Graphics g) {
             super.paintComponent(g);
             if (image != null) {
-                int w = image.getWidth();
-                int h = image.getHeight();
+                int w = 500;//image.getWidth();
+                int h = 400;//image.getHeight();
+//                image = image.getTile(500, 400);
                 g.drawImage(image, 0, 0, (int) (w * zoom), (int) (h * zoom), null);
             }
+        }
+    }
+
+    private void setImage() {
+        try {
+            image = ImageIO.read(new File(files[position].getAbsolutePath()));
+        } catch (IOException evt) {
+            evt.printStackTrace();
+            System.out.println("Could not open file.");
         }
     }
 
@@ -377,18 +371,113 @@ class ImageFrame extends JFrame {
      * A component that displays four images
      */
     private class ThumbnailPanel extends JPanel {
+
+        int groupLocal = 1;
+
         ThumbnailPanel() {
             setVisible(false);
+            setLayout(new GridLayout(2, 2));
+//            setThumbnails();
         }
-        public void paintComponent(Graphics g) {
-            super.paintComponent(g);
-            if (image != null) {
-                int w = 100;
-                int h = 100;
-                g.drawImage(image, 0, 0, w, h, null);
+
+
+//        public void paintComponent(Graphics g) {
+//            super.paintComponent(g);
+//            if (files != null) {
+//                try {
+//                    thumbnail1 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
+//                    thumbnail2 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
+//                    thumbnail3 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
+//                    thumbnail4 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                    System.out.println("Could not open file.");
+//                }
+//                int w = 100;
+//                int h = 100;
+//                g.drawImage(thumbnail1, 0, 0, w, h, null);
+//                g.drawImage(thumbnail2, 0, 0, w, h, null);
+//                g.drawImage(thumbnail3, 0, 0, w, h, null);
+//                g.drawImage(thumbnail4, 0, 0, w, h, null);
+//            }
+//        }
+    }
+
+    private void setThumbnails() {
+        if (files != null && fileLocal < files.length) {
+            for (int i = fileLocal % 4; i < 4; i++) {
+                String tempThumbnail = "Thumbnail" + i;
+                if (fileLocal < files.length) {
+                    switch (i) {
+                        case 0:
+                            try {
+                                thumbnail1 = ImageIO.read(new File(files[position].getAbsolutePath()));
+                            } catch (IOException evt) {
+                                evt.printStackTrace();
+                                System.out.println("Could not open file.");
+                            }
+                            position++;
+//                            thumbnail1.s
+//                                    setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            break;
+                        case 1:
+                            try {
+                                thumbnail2 = ImageIO.read(new File(files[position].getAbsolutePath()));
+                            } catch (IOException evt) {
+                                evt.printStackTrace();
+                                System.out.println("Could not open file.");
+                            }
+                            position++;
+//                            thumbnail2.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            break;
+                        case 2:
+                            try {
+                                thumbnail3 = ImageIO.read(new File(files[position].getAbsolutePath()));
+                            } catch (IOException evt) {
+                                evt.printStackTrace();
+                                System.out.println("Could not open file.");
+                            }
+                            position++;
+//                            thumbnail3.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            break;
+                        case 3:
+                            try {
+                                thumbnail4 = ImageIO.read(new File(files[position].getAbsolutePath()));
+                            } catch (IOException evt) {
+                                evt.printStackTrace();
+                                System.out.println("Could not open file.");
+                            }
+                            position++;
+//                            thumbnail4.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            break;
+                    }
+                    position++;
+                }
             }
+
         }
     }
+
+
+
+//    /**
+//     * A component that displays four images
+//     */
+//    private class ThumbnailPanel extends JPanel {
+//        ThumbnailPanel() {
+//            setLayout(new GridLayout());
+//
+//            setVisible(false);
+//        }
+//        public void paintComponent(Graphics g) {
+//            super.paintComponent(g);
+//            if (image != null) {
+//                int w = 100;
+//                int h = 100;
+//                g.drawImage(image, 0, 0, w, h, null);
+//            }
+//        }
+//    }
 
     /**
      * Sets default dimensions of the JFrame
@@ -396,7 +485,7 @@ class ImageFrame extends JFrame {
     public Dimension getPreferredSize() {
         Toolkit kit = Toolkit.getDefaultToolkit();
         Dimension screenSize = kit.getScreenSize();
-        setLocation(screenSize.width/5, screenSize.height/10);
+        setLocation(screenSize.width/5, screenSize.height/5);
 
 //        if (image != null && image.getWidth() > screenSize.getWidth()/2 ) {
 //            return new Dimension(image.getWidth(), screenSize.height / 2);
@@ -453,12 +542,4 @@ class ImageFrame extends JFrame {
 //        picLabel.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM); //Caption appears below the image
 //
 //    }
-
-    public BufferedImage getImage() {
-        return image;
-    }
-
-    public void setImage(BufferedImage image) {
-        this.image = image;
-    }
 }
