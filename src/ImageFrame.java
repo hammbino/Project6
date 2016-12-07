@@ -8,9 +8,8 @@ import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.io.StreamCorruptedException;
+import java.io.*;
+import java.util.*;
 
 /**
  * A frame to view images
@@ -18,17 +17,28 @@ import java.io.StreamCorruptedException;
 class ImageFrame extends JFrame {
 
     private int position = 0; //Initial position is 0
-    private boolean thumbnailViewEnabled = false;
+    private int thumbnailPosition = 0;
     private File [] files; //Array to hold the file names
     private BufferedImage image;
-    private int fileLocal = 0;
     private JLabel thumbnail1 = new JLabel();
     private JLabel thumbnail2 = new JLabel();
     private JLabel thumbnail3 = new JLabel();
     private JLabel thumbnail4 = new JLabel();
     private double zoom = 1;
 
+    private JLabel photographLabel = new JLabel();
+    private MissingIcon placeholderIcon = new MissingIcon();
+    private String[] imageCaptions;
+    private String[] imageFileNames;
+
     ImageFrame() {
+
+        // A label for displaying the pictures
+        photographLabel.setVerticalTextPosition(JLabel.BOTTOM);
+        photographLabel.setHorizontalTextPosition(JLabel.CENTER);
+        photographLabel.setHorizontalAlignment(JLabel.CENTER);
+        photographLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
         setSize(getPreferredSize());
         getJpegs(".");//TODO handle if FILES is empty
         setImage();
@@ -68,8 +78,6 @@ class ImageFrame extends JFrame {
         imageSizingPanel.add(defaultSizeButton);
         imageSizingPanel.add(zoomOutButton);
 
-//        JPanel imageView = new FileImage();
-
         JPanel imageViewPanel = new JPanel();
         imageViewPanel.setLayout(new BoxLayout(imageViewPanel, BoxLayout.PAGE_AXIS));
 
@@ -79,10 +87,14 @@ class ImageFrame extends JFrame {
         previousButton.addActionListener(e -> {
             zoom = 1;
             position--;
+            thumbnailPosition -= 8;
             if(position < 0 || position >= files.length ) {
-                position = files.length -1;
+                position = files.length - 1;
             }
-//            setThumbnails();
+            if(thumbnailPosition < -3 || thumbnailPosition >= files.length - 1 ) {
+                thumbnailPosition = files.length - 4;
+            }
+            setThumbnails();
             setImage();
             repaint();
         });
@@ -94,7 +106,10 @@ class ImageFrame extends JFrame {
             if(position < 0 || position >= files.length ) {
                 position = 0;
             }
-//            setThumbnails();
+            if(thumbnailPosition < 0 || thumbnailPosition >= files.length ) {
+                thumbnailPosition = 0;
+            }
+            setThumbnails();
             setImage();
             repaint();
         });
@@ -181,11 +196,28 @@ class ImageFrame extends JFrame {
 
         albumButtonPanel.add(saveAlbumButton);
         saveAlbumButton.addActionListener(e -> {
-            repaint();
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("listImages.dat")))
+            {
+                out.writeObject(files);
+            } catch (IOException evt) {
+                evt.printStackTrace();
+            }
         });
 
         albumButtonPanel.add(openAlbumButton);
         openAlbumButton.addActionListener(e -> {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("listImages.dat")))
+            {
+                // retrieve all records into files array
+                files = (File[]) in.readObject();
+                setImage();
+                setThumbnails();
+
+            } catch (ClassNotFoundException evt) {
+                evt.printStackTrace();
+            } catch (IOException evt) {
+                evt.printStackTrace();
+            }
             repaint();
         });
 
@@ -216,7 +248,7 @@ class ImageFrame extends JFrame {
 ////                JFileChooser chooser = new JFileChooser();
 ////                chooser.setCurrentDirectory(new File("."));
 ////                FileNameExtensionFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
-////                chooser.addChoosableFileFilter(filter);
+////                chooser.addChooseAbleFileFilter(filter);
 ////                chooser.setAcceptAllFileFilterUsed(false);
 ////                int result = chooser.showOpenDialog(ImageFrame.this);
 ////                if (result == JFileChooser.APPROVE_OPTION) {
@@ -338,12 +370,23 @@ class ImageFrame extends JFrame {
 //                getParent().repaint();
 //            });
 //        }
-//    }
+//  }
+
+    void getJpegs(String fileDir) {
+        File dir = new File(fileDir);
+        files = dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"));
+
+        if (files != null) {
+            for (File jpeg : files) {
+                System.out.println(jpeg);
+            }
+        }
+    }
 
     /**
      * A component that displays an image
      */
-    class ImagePanel extends JPanel {
+    private class ImagePanel extends JPanel {
         ImagePanel () {
             setVisible(true);
         }
@@ -372,88 +415,47 @@ class ImageFrame extends JFrame {
      */
     private class ThumbnailPanel extends JPanel {
 
-        int groupLocal = 1;
-
         ThumbnailPanel() {
             setVisible(false);
             setLayout(new GridLayout(2, 2));
+            //TOdo try just adding a thumbnail
             add(thumbnail1);
             add(thumbnail2);
             add(thumbnail3);
             add(thumbnail4);
             setThumbnails();
+
         }
-
-
-//        public void paintComponent(Graphics g) {
-//            super.paintComponent(g);
-//            if (files != null) {
-//                try {
-//                    thumbnail1 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
-//                    thumbnail2 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
-//                    thumbnail3 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
-//                    thumbnail4 = ImageIO.read(new File(files[fileLocal++].getAbsolutePath()));
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                    System.out.println("Could not open file.");
-//                }
-//                int w = 100;
-//                int h = 100;
-//                g.drawImage(thumbnail1, 0, 0, w, h, null);
-//                g.drawImage(thumbnail2, 0, 0, w, h, null);
-//                g.drawImage(thumbnail3, 0, 0, w, h, null);
-//                g.drawImage(thumbnail4, 0, 0, w, h, null);
-//            }
-//        }
     }
 
     private void setThumbnails() {
-        if (files != null && fileLocal < files.length) {
-            for (int i = fileLocal % 4; i < 4; i++) {
-                String tempThumbnail = "Thumbnail" + i;
-                if (fileLocal < files.length) {
+        if (files != null && thumbnailPosition < files.length) {
+            for (int i = thumbnailPosition % 4; i < 4; i++) {
+                if (thumbnailPosition < files.length) {
                     switch (i) {
                         case 0:
-                            thumbnail1.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail1.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
                             break;
                         case 1:
-                            thumbnail2.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail2.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
                             break;
                         case 2:
-                            thumbnail3.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail3.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
                             break;
                         case 3:
-                            thumbnail4.setIcon(new ImageIcon(files[fileLocal++].getAbsolutePath()));
+                            thumbnail4.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
                             break;
+                        default:
+                            //todo add null
                     }
                 }else {
-                    fileLocal++;
+                    thumbnailPosition++;
                 }
             }
 
         }
     }
 
-
-
-//    /**
-//     * A component that displays four images
-//     */
-//    private class ThumbnailPanel extends JPanel {
-//        ThumbnailPanel() {
-//            setLayout(new GridLayout());
-//
-//            setVisible(false);
-//        }
-//        public void paintComponent(Graphics g) {
-//            super.paintComponent(g);
-//            if (image != null) {
-//                int w = 100;
-//                int h = 100;
-//                g.drawImage(image, 0, 0, w, h, null);
-//            }
-//        }
-//    }
 
     /**
      * Sets default dimensions of the JFrame
@@ -468,18 +470,6 @@ class ImageFrame extends JFrame {
 //        }
 
         return new Dimension(screenSize.width/2, screenSize.height/2);
-    }
-
-
-    private void getJpegs(String fileDir) {
-        File dir = new File(fileDir);
-        files = dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"));
-
-        if (files != null) {
-            for (File jpeg : files) {
-                System.out.println(jpeg);
-            }
-        }
     }
 
 //    //Method to set the picture on the label
