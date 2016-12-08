@@ -9,6 +9,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * A frame to view images
@@ -16,13 +17,12 @@ import java.io.*;
 class ImageFrame extends JFrame {
 
     private int position = 0; //Initial position is 0
-    private int thumbnailPosition = 0;
-    private File [] files; //Array to hold the file names
+    private ArrayList<File> files = new ArrayList<>(); //Array to hold the file names
     private BufferedImage image;
-    private JLabel thumbnail1 = new JLabel();
-    private JLabel thumbnail2 = new JLabel();
-    private JLabel thumbnail3 = new JLabel();
-    private JLabel thumbnail4 = new JLabel();
+    private JButton thumbnail1 = new JButton();
+    private JButton thumbnail2 = new JButton();
+    private JButton thumbnail3 = new JButton();
+    private JButton thumbnail4 = new JButton();
     private double zoom = 1;
     private JFileChooser chooser;
 
@@ -37,11 +37,22 @@ class ImageFrame extends JFrame {
         photographLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         setSize(getPreferredSize());
+        setMinimumSize(new Dimension(650,600));
         getJpegs(".");//TODO handle if FILES is empty
         setImage();
 
         JPanel imagePanel = new ImagePanel ();
-        JPanel thumbnailPanel = new ThumbnailPanel();
+
+        JPanel thumbnailPanel = new JPanel();
+
+        thumbnailPanel.setVisible(false);
+        thumbnailPanel.setLayout(new GridLayout(2, 2));
+        //TOdo try just adding a thumbnail
+        thumbnailPanel.add(thumbnail1);
+        thumbnailPanel.add(thumbnail2);
+        thumbnailPanel.add(thumbnail3);
+        thumbnailPanel.add(thumbnail4);
+//        setThumbnails();
 
         JPanel imageSizingPanel = new JPanel();
         imageSizingPanel.setLayout(new FlowLayout());
@@ -84,31 +95,33 @@ class ImageFrame extends JFrame {
         previousButton.addActionListener(e -> {
             zoom = 1;
             position--;
-            if(position < 0 || position >= files.length ) {
-                position = files.length - 1;
+            if(position < 0 || position >= files.size() ) {
+                position = files.size() - 1;
             }
-            if(thumbnailPosition < -3 || thumbnailPosition >= files.length - 1 && files.length > 3 ) {
-                thumbnailPosition = files.length - 4;
-            } else {
-                thumbnailPosition -= 7;
+            if(thumbnailPanel.isDisplayable()) {
+                position -= 7;
+                setThumbnails();
             }
-            setThumbnails();
-            setImage();
+            else {
+                setImage();
+            }
             repaint();
         });
 
         JButton nextButton = new JButton("Next");
         nextButton.addActionListener(e -> {
             zoom = 1;
-            position++;
-            if(position < 0 || position >= files.length ) {
+
+            if(position < 0 || position >= files.size() ) {
                 position = 0;
             }
-            if(thumbnailPosition < 0 || thumbnailPosition >= files.length ) {
-                thumbnailPosition = 0;
+            if(thumbnailPanel.isDisplayable()) {
+                setThumbnails();
             }
-            setThumbnails();
-            setImage();
+            else {
+                position++;
+                setImage();
+            }
             repaint();
         });
 
@@ -116,48 +129,121 @@ class ImageFrame extends JFrame {
         imageNavigationPanel.add(previousButton);
         imageNavigationPanel.add(nextButton);
 
-        JButton singleImageButton = new JButton("View Image");
+        JButton setCaptionButton = new JButton("Set Caption");
         JButton thumbnailButton = new JButton("View Thumbnails");
 
         thumbnailButton.addActionListener(e -> {
             imagePanel.setVisible(false);
             thumbnailPanel.setVisible(true);
-            zoomInButton.setEnabled(false);
-            zoomOutButton.setEnabled(false);
-            defaultSizeButton.setEnabled(false);
-            thumbnailButton.setEnabled(false);
-            singleImageButton.setEnabled(true);
+//            zoomInButton.setEnabled(false);
+//            zoomOutButton.setEnabled(false);
+//            defaultSizeButton.setEnabled(false);
+            imageSizingPanel.setEnabled(false);
+            imageSizingPanel.setVisible(false);
+//            thumbnailButton.setEnabled(false);
+            thumbnailButton.setVisible(false);
+//            setCaptionButton.setEnabled(false);
+            setCaptionButton.setVisible(false);
             getContentPane().add(thumbnailPanel);
             getContentPane().remove(imagePanel);
             repaint();
         });
 
-        singleImageButton.addActionListener(e -> {
+        setCaptionButton.addActionListener(e -> {
+            //TODO Get Caption
+        });
+
+        thumbnail1.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
-            zoomInButton.setEnabled(true);
-            zoomOutButton.setEnabled(true);
-            defaultSizeButton.setEnabled(true);
-            singleImageButton.setEnabled(false);
-            thumbnailButton.setEnabled(true);
+//            zoomInButton.setEnabled(true);
+//            zoomOutButton.setEnabled(true);
+//            defaultSizeButton.setEnabled(true);
+            //            zoomInButton.setEnabled(false);
+//            zoomOutButton.setEnabled(false);
+//            defaultSizeButton.setEnabled(false);
+            imageSizingPanel.setEnabled(true);
+            imageSizingPanel.setVisible(true);
+//            setCaptionButton.setEnabled(true);
+            setCaptionButton.setVisible(true);
+//            thumbnailButton.setEnabled(true);
+            thumbnailButton.setVisible(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
+            position = files.indexOf(thumbnail1.getText());
+            setImage();
+            repaint();
+        });
+        thumbnail2.addActionListener(e -> {
+            imagePanel.setVisible(true);
+            thumbnailPanel.setVisible(false);
+//            zoomInButton.setEnabled(true);
+//            zoomOutButton.setEnabled(true);
+//            defaultSizeButton.setEnabled(true);
+            //            zoomInButton.setEnabled(false);
+//            zoomOutButton.setEnabled(false);
+//            defaultSizeButton.setEnabled(false);
+            imageSizingPanel.setEnabled(true);
+            imageSizingPanel.setVisible(true);
+//            setCaptionButton.setEnabled(true);
+            setCaptionButton.setVisible(true);
+//            thumbnailButton.setEnabled(true);
+            thumbnailButton.setVisible(true);
+            getContentPane().add(imagePanel);
+            getContentPane().remove(thumbnailPanel);
+            position = files.indexOf(new File("./" + thumbnail2.getText()));
+            setImage();
+            repaint();
+        });
+        thumbnail3.addActionListener(e -> {
+            imagePanel.setVisible(true);
+            thumbnailPanel.setVisible(false);
+//            zoomInButton.setEnabled(true);
+//            zoomOutButton.setEnabled(true);
+//            defaultSizeButton.setEnabled(true);
+            //            zoomInButton.setEnabled(false);
+//            zoomOutButton.setEnabled(false);
+//            defaultSizeButton.setEnabled(false);
+            imageSizingPanel.setEnabled(true);
+            imageSizingPanel.setVisible(true);
+//            setCaptionButton.setEnabled(true);
+            setCaptionButton.setVisible(true);
+//            thumbnailButton.setEnabled(true);
+            thumbnailButton.setVisible(true);
+            getContentPane().add(imagePanel);
+            getContentPane().remove(thumbnailPanel);
+            position = files.indexOf(new File("./" + thumbnail3.getText()));
+            setImage();
+            repaint();
+        });
+        thumbnail4.addActionListener(e -> {
+            imagePanel.setVisible(true);
+            thumbnailPanel.setVisible(false);
+//            zoomInButton.setEnabled(true);
+//            zoomOutButton.setEnabled(true);
+//            defaultSizeButton.setEnabled(true);
+            //            zoomInButton.setEnabled(false);
+//            zoomOutButton.setEnabled(false);
+//            defaultSizeButton.setEnabled(false);
+            imageSizingPanel.setEnabled(true);
+            imageSizingPanel.setVisible(true);
+//            setCaptionButton.setEnabled(true);
+            setCaptionButton.setVisible(true);
+//            thumbnailButton.setEnabled(true);
+            thumbnailButton.setVisible(true);
+            getContentPane().add(imagePanel);
+            getContentPane().remove(thumbnailPanel);
+            position = files.indexOf(new File("./" + thumbnail4.getText()));
+            setImage();
             repaint();
         });
 
         //Todo this needs some love and a refactor
         JButton openButton = new JButton("Open");
         openButton.addActionListener(event -> {
-//            JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File("."));
-
             // show file chooser dialog
             int result = chooser.showOpenDialog(ImageFrame.this);
-
-//            FileNameExtensionFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
-//            chooser.addChoosableFileFilter(filter);
-//            chooser.setAcceptAllFileFilterUsed(false);
-//            int result = chooser.showOpenDialog(ImageFrame.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = chooser.getSelectedFile();
                 try {
@@ -168,8 +254,8 @@ class ImageFrame extends JFrame {
                 }
 
                 getJpegs(chooser.getCurrentDirectory().toString());
-                for (int i = 0; i < files.length; i++ ) {
-                    if (files[i].toString().equals(chooser.getSelectedFile().toString())) {
+                for (int i = 0; i < files.size(); i++ ) {
+                    if (files.get(i).toString().equals(chooser.getSelectedFile().toString())) {
                         position = i;
                     }
                 }
@@ -187,13 +273,11 @@ class ImageFrame extends JFrame {
         chooser.setAccessory(new ImagePreviewer(chooser));
         chooser.setFileView(new FileIconView(filter, new ImageIcon("palette.gif")));
 
-
-
         JButton quitButton = new JButton("Quit");
         quitButton.addActionListener(e -> System.exit(0));
 
         imageViewPanel.add(thumbnailButton);
-        imageViewPanel.add(singleImageButton);
+        imageViewPanel.add(setCaptionButton);
         imageViewPanel.add(openButton);
         imageViewPanel.add(quitButton);
 
@@ -218,7 +302,7 @@ class ImageFrame extends JFrame {
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("listImages.dat")))
             {
                 // retrieve all records into files array
-                files = (File[]) in.readObject();
+                files = (ArrayList<File>) in.readObject();
                 setImage();
                 setThumbnails();
 
@@ -238,12 +322,15 @@ class ImageFrame extends JFrame {
         contentPane.add(imageNavigationPanel, BorderLayout.SOUTH);
         contentPane.add(albumButtonPanel, BorderLayout.EAST);
 
-        singleImageButton.setEnabled(false);
+//        setCaptionButton.setEnabled(true);
     }
 
     void getJpegs(String fileDir) {
         File dir = new File(fileDir);
-        files = dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"));
+        for (File fileName: dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"))) {
+            files.add(fileName);
+        }
+//        files = dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"));
 
         if (files != null) {
             for (File jpeg : files) {
@@ -274,62 +361,69 @@ class ImageFrame extends JFrame {
      * A method that sets an image
      */
     private void setImage() {
+        if (position < 0) {
+            position = files.size() - 1;
+        }
+        if (position >= files.size()) {
+            position = 0;
+        }
         try {
-            image = ImageIO.read(new File(files[position].getAbsolutePath()));
+            image = ImageIO.read(new File(files.get(position).getAbsolutePath()));
         } catch (IOException evt) {
             evt.printStackTrace();
             System.out.println("Could not open file.");
         }
     }
 
-    /**
-     * A component that displays four images
-     */
-    private class ThumbnailPanel extends JPanel {
-
-        ThumbnailPanel() {
-            setVisible(false);
-            setLayout(new GridLayout(2, 2));
-            //TOdo try just adding a thumbnail
-            add(thumbnail1);
-            add(thumbnail2);
-            add(thumbnail3);
-            add(thumbnail4);
-            setThumbnails();
-
-        }
-    }
 
     private void setThumbnails() {
-        if (files.length > 0 && thumbnailPosition < files.length) {
-            if (thumbnailPosition < 0)
-                thumbnailPosition = 0;
-            for (int i = thumbnailPosition % 4; i < 4; i++) {
-                if (thumbnailPosition < files.length) {
+        if (position < 0) {
+            position = files.size() - 1;
+        }
+        if (position >= files.size()) {
+            position = 0;
+        }
+        if (files.size() > 0 && position < files.size()) {
+            for (int i = position % 4; i < 4; i++) {
+                if (position < files.size()) {
+                    ImageIcon thumbnailImage = new ImageIcon(files.get(position).getAbsolutePath());
+                    Image tempImage = thumbnailImage.getImage();
+                    Image scaledImage = tempImage.getScaledInstance(80, 60, Image.SCALE_SMOOTH);
+                    thumbnailImage.setImage(scaledImage);
+                    String pictureName = files.get(position).getName();
                     switch (i) {
                         case 0:
-                            thumbnail1.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
+                            thumbnail1.setIcon(thumbnailImage);
+                            thumbnail1.setText(pictureName);
+                            thumbnail1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                            thumbnail1.setHorizontalTextPosition(SwingConstants.CENTER);
                             break;
                         case 1:
-                            thumbnail2.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
+                            thumbnail2.setIcon(thumbnailImage);
+                            thumbnail2.setText(pictureName);
+                            thumbnail2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                            thumbnail2.setHorizontalTextPosition(SwingConstants.CENTER);
                             break;
                         case 2:
-                            thumbnail3.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
+                            thumbnail3.setIcon(thumbnailImage);
+                            thumbnail3.setText(pictureName);
+                            thumbnail3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                            thumbnail3.setHorizontalTextPosition(SwingConstants.CENTER);
                             break;
                         case 3:
-                            thumbnail4.setIcon(new ImageIcon(files[thumbnailPosition++].getAbsolutePath()));
+                            thumbnail4.setIcon(thumbnailImage);
+                            thumbnail4.setText(pictureName);
+                            thumbnail4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                            thumbnail4.setHorizontalTextPosition(SwingConstants.CENTER);
                             break;
                         default:
-                            //todo add null
+                            break;
                     }
-                }else {
-                    thumbnailPosition++;
                 }
+                position++;
             }
-
         }
     }
-
 
     /**
      * Sets default dimensions of the JFrame
