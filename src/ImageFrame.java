@@ -254,10 +254,14 @@ class ImageFrame extends JFrame {
                 }
 
                 getJpegs(chooser.getCurrentDirectory().toString());
+                //Todo Could possibly be set the same way when clickin on thumbnail
                 for (int i = 0; i < files.size(); i++ ) {
                     if (files.get(i).toString().equals(chooser.getSelectedFile().toString())) {
                         position = i;
                     }
+                }
+                if(thumbnailPanel.isDisplayable()) {
+                    setThumbnails();
                 }
                 repaint();
             } else if (result == JFileChooser.CANCEL_OPTION) {
@@ -326,6 +330,7 @@ class ImageFrame extends JFrame {
     }
 
     void getJpegs(String fileDir) {
+        files.clear();
         File dir = new File(fileDir);
         for (File fileName: dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"))) {
             files.add(fileName);
@@ -384,7 +389,7 @@ class ImageFrame extends JFrame {
             position = 0;
         }
         if (files.size() > 0 && position < files.size()) {
-            for (int i = position % 4; i < 4; i++) {
+            for (int i = 0; i < 4; i++) {
                 if (position < files.size()) {
                     ImageIcon thumbnailImage = new ImageIcon(files.get(position).getAbsolutePath());
                     Image tempImage = thumbnailImage.getImage();
