@@ -1,3 +1,8 @@
+/*
+ * Project6
+ * Created by Jeffrey Hammond on 11/29/16.
+ */
+
 import java.awt.*;
 import java.beans.*;
 import java.io.*;

@@ -1,3 +1,7 @@
+/*
+ * Project6
+ * Created by Jeffrey Hammond on 11/29/16.
+ */
 
 import java.io.*;
 import javax.swing.*;

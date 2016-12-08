@@ -25,6 +25,7 @@ class ImageFrame extends JFrame {
     private JButton thumbnail4 = new JButton();
     private double zoom = 1;
     private JFileChooser chooser;
+    private Album album;
 
     private JLabel photographLabel = new JLabel();
 
@@ -37,7 +38,7 @@ class ImageFrame extends JFrame {
         photographLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         setSize(getPreferredSize());
-        setMinimumSize(new Dimension(650,600));
+        setMinimumSize(new Dimension(550,500));
         getJpegs(".");//TODO handle if FILES is empty
         setImage();
 
@@ -90,13 +91,13 @@ class ImageFrame extends JFrame {
         previousButton.addActionListener(e -> {
             zoom = 1;
             position--;
-            if(position < 0 || position >= files.size() ) {
-                position = files.size() - 1;
+            if(position < 0 || position >= album.getFilesSize() ) {
+                position = album.getFilesSize() - 1;
             }
             if(thumbnailPanel.isDisplayable()) {
                 position -= 7;
                 if (position < 0) {
-                    position = (files.size() + position);
+                    position = (album.getFilesSize() + position);
                 }
                 setThumbnails();
             }
@@ -283,18 +284,23 @@ class ImageFrame extends JFrame {
     }
 
     void getJpegs(String fileDir) {
-        files.clear();
-        File dir = new File(fileDir);
-        for (File fileName: dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"))) {
-            files.add(fileName);
-        }
+//        files.clear();
+//
+//
+//        File dir = new File(fileDir);
+//        for (File fileName: dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"))) {
+//            files.add(fileName);
+//        }
+
+        album = new Album(fileDir);
+        files = album.getFiles();
 //  TODO create ALBUM CLASS that stores the list of captions file names and file URLs
 
-        if (files != null) {
-            for (File jpeg : files) {
-                System.out.println(jpeg);
-            }
-        }
+//        if (files != null) {
+//            for (File jpeg : files) {
+//                System.out.println(jpeg);
+//            }
+//        }
     }
 
     /**
