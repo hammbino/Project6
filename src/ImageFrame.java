@@ -100,6 +100,9 @@ class ImageFrame extends JFrame {
             }
             if(thumbnailPanel.isDisplayable()) {
                 position -= 7;
+                if (position < 0) {
+                    position = ((files.size() - 1) + position);
+                }
                 setThumbnails();
             }
             else {
@@ -382,50 +385,54 @@ class ImageFrame extends JFrame {
 
 
     private void setThumbnails() {
+        int numberToIterate = 4;
         if (position < 0) {
             position = files.size() - 1;
         }
         if (position >= files.size()) {
             position = 0;
         }
-        if (files.size() > 0 && position < files.size()) {
-            for (int i = 0; i < 4; i++) {
-                if (position < files.size()) {
-                    ImageIcon thumbnailImage = new ImageIcon(files.get(position).getAbsolutePath());
-                    Image tempImage = thumbnailImage.getImage();
-                    Image scaledImage = tempImage.getScaledInstance(80, 60, Image.SCALE_SMOOTH);
-                    thumbnailImage.setImage(scaledImage);
-                    String pictureName = files.get(position).getName();
-                    switch (i) {
-                        case 0:
-                            thumbnail1.setIcon(thumbnailImage);
-                            thumbnail1.setText(pictureName);
-                            thumbnail1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-                            thumbnail1.setHorizontalTextPosition(SwingConstants.CENTER);
-                            break;
-                        case 1:
-                            thumbnail2.setIcon(thumbnailImage);
-                            thumbnail2.setText(pictureName);
-                            thumbnail2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-                            thumbnail2.setHorizontalTextPosition(SwingConstants.CENTER);
-                            break;
-                        case 2:
-                            thumbnail3.setIcon(thumbnailImage);
-                            thumbnail3.setText(pictureName);
-                            thumbnail3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-                            thumbnail3.setHorizontalTextPosition(SwingConstants.CENTER);
-                            break;
-                        case 3:
-                            thumbnail4.setIcon(thumbnailImage);
-                            thumbnail4.setText(pictureName);
-                            thumbnail4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-                            thumbnail4.setHorizontalTextPosition(SwingConstants.CENTER);
-                            break;
-                        default:
-                            break;
-                    }
+        if (files.size() > 0) {
+            if (files.size() < numberToIterate)
+                numberToIterate = files.size();
+            for (int i = 0; i < numberToIterate; i++) {
+                if (position > files.size() -1) {
+                    position = 0;
                 }
-                position++;
+                ImageIcon thumbnailImage = new ImageIcon(files.get(position).getAbsolutePath());
+                Image tempImage = thumbnailImage.getImage();
+                Image scaledImage = tempImage.getScaledInstance(80, 60, Image.SCALE_SMOOTH);
+                thumbnailImage.setImage(scaledImage);
+                String pictureName = files.get(position).getName();
+                switch (i) {
+                    case 0:
+                        thumbnail1.setIcon(thumbnailImage);
+                        thumbnail1.setText(pictureName);
+                        thumbnail1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                        thumbnail1.setHorizontalTextPosition(SwingConstants.CENTER);
+                        break;
+                    case 1:
+                        thumbnail2.setIcon(thumbnailImage);
+                        thumbnail2.setText(pictureName);
+                        thumbnail2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                        thumbnail2.setHorizontalTextPosition(SwingConstants.CENTER);
+                        break;
+                    case 2:
+                        thumbnail3.setIcon(thumbnailImage);
+                        thumbnail3.setText(pictureName);
+                        thumbnail3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                        thumbnail3.setHorizontalTextPosition(SwingConstants.CENTER);
+                        break;
+                    case 3:
+                        thumbnail4.setIcon(thumbnailImage);
+                        thumbnail4.setText(pictureName);
+                        thumbnail4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+                        thumbnail4.setHorizontalTextPosition(SwingConstants.CENTER);
+                        break;
+                    default:
+                        break;
+                }
+            position++;
             }
         }
     }
