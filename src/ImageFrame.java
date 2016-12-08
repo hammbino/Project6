@@ -9,7 +9,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.util.*;
 
 /**
  * A frame to view images
@@ -25,11 +24,9 @@ class ImageFrame extends JFrame {
     private JLabel thumbnail3 = new JLabel();
     private JLabel thumbnail4 = new JLabel();
     private double zoom = 1;
+    private JFileChooser chooser;
 
     private JLabel photographLabel = new JLabel();
-    private MissingIcon placeholderIcon = new MissingIcon();
-    private String[] imageCaptions;
-    private String[] imageFileNames;
 
     ImageFrame() {
 
@@ -87,12 +84,13 @@ class ImageFrame extends JFrame {
         previousButton.addActionListener(e -> {
             zoom = 1;
             position--;
-            thumbnailPosition -= 8;
             if(position < 0 || position >= files.length ) {
                 position = files.length - 1;
             }
-            if(thumbnailPosition < -3 || thumbnailPosition >= files.length - 1 ) {
+            if(thumbnailPosition < -3 || thumbnailPosition >= files.length - 1 && files.length > 3 ) {
                 thumbnailPosition = files.length - 4;
+            } else {
+                thumbnailPosition -= 7;
             }
             setThumbnails();
             setImage();
@@ -118,7 +116,6 @@ class ImageFrame extends JFrame {
         imageNavigationPanel.add(previousButton);
         imageNavigationPanel.add(nextButton);
 
-
         JButton singleImageButton = new JButton("View Image");
         JButton thumbnailButton = new JButton("View Thumbnails");
 
@@ -134,7 +131,6 @@ class ImageFrame extends JFrame {
             getContentPane().remove(imagePanel);
             repaint();
         });
-
 
         singleImageButton.addActionListener(e -> {
             imagePanel.setVisible(true);
@@ -152,12 +148,16 @@ class ImageFrame extends JFrame {
         //Todo this needs some love and a refactor
         JButton openButton = new JButton("Open");
         openButton.addActionListener(event -> {
-            JFileChooser chooser = new JFileChooser();
+//            JFileChooser chooser = new JFileChooser();
             chooser.setCurrentDirectory(new File("."));
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
-            chooser.addChoosableFileFilter(filter);
-            chooser.setAcceptAllFileFilterUsed(false);
+
+            // show file chooser dialog
             int result = chooser.showOpenDialog(ImageFrame.this);
+
+//            FileNameExtensionFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
+//            chooser.addChoosableFileFilter(filter);
+//            chooser.setAcceptAllFileFilterUsed(false);
+//            int result = chooser.showOpenDialog(ImageFrame.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = chooser.getSelectedFile();
                 try {
@@ -178,6 +178,15 @@ class ImageFrame extends JFrame {
                 System.out.println("No File Selected"); //TODO add dialogue box
             }
         });
+
+        // set up file chooser
+        chooser = new JFileChooser();
+        // accept all image files ending with .jpg, .jpeg
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image files", "jpg", "jpeg");
+        chooser.setFileFilter(filter);
+        chooser.setAccessory(new ImagePreviewer(chooser));
+        chooser.setFileView(new FileIconView(filter, new ImageIcon("palette.gif")));
+
 
 
         JButton quitButton = new JButton("Quit");
@@ -223,154 +232,14 @@ class ImageFrame extends JFrame {
 
 
         Container contentPane = getContentPane();
-//        contentPane.add(new ButtonPanel(), BorderLayout.NORTH);
-//        contentPane.add(new ImageSizingPanel(), BorderLayout.NORTH);
         contentPane.add(imageSizingPanel, BorderLayout.NORTH);
         contentPane.add(imageViewPanel, BorderLayout.WEST);
-//        contentPane.add(imageView, BorderLayout.CENTER);
-//        contentPane.add(thumbnailPanel, BorderLayout.CENTER);
         contentPane.add(imagePanel, BorderLayout.CENTER);
-
         contentPane.add(imageNavigationPanel, BorderLayout.SOUTH);
-//        contentPane.add(new ImageNavigationPanel(), BorderLayout.SOUTH);
         contentPane.add(albumButtonPanel, BorderLayout.EAST);
 
         singleImageButton.setEnabled(false);
     }
-
-
-
-//    private class ButtonPanel extends JPanel {
-//        ButtonPanel() {
-//            //Todo this needs some love and a refactor
-////            JButton openButton = new JButton("Open");
-////            openButton.addActionListener(event -> {
-////                JFileChooser chooser = new JFileChooser();
-////                chooser.setCurrentDirectory(new File("."));
-////                FileNameExtensionFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
-////                chooser.addChooseAbleFileFilter(filter);
-////                chooser.setAcceptAllFileFilterUsed(false);
-////                int result = chooser.showOpenDialog(ImageFrame.this);
-////                if (result == JFileChooser.APPROVE_OPTION) {
-////                    File selectedFile = chooser.getSelectedFile();
-////                    try {
-////                        image = ImageIO.read(new File(selectedFile.getAbsolutePath()));
-////                    } catch (IOException e) {
-////                        e.printStackTrace();
-////                        System.out.println("Could not open file.");
-////                    }
-////
-////                    getJpegs(chooser.getCurrentDirectory().toString());
-////                    for (int i = 0; i < files.length; i++ ) {
-////                        if (files[i].toString().equals(chooser.getSelectedFile().toString())) {
-////                            position = i;
-////                        }
-////                    }
-////                    getParent().repaint();
-////                } else if (result == JFileChooser.CANCEL_OPTION) {
-////                    System.out.println("No File Selected");
-////                }
-////            });
-////
-////            JButton zoomInButton = new JButton("Zoom In");
-////            zoomInButton.addActionListener(e -> {
-////                zoom += .25;
-////                getParent().repaint();
-////
-////            });
-////
-////            JButton defaultSizeButton = new JButton("100%");
-////            defaultSizeButton.addActionListener(e -> {
-////                zoom = 1;
-////                getParent().repaint();
-////            });
-////
-////            JButton zoomOutButton = new JButton("Zoom Out");
-////            zoomOutButton.addActionListener(e -> {
-////                zoom -= .25;
-////                getParent().repaint();
-////            });
-//
-////            JButton quitButton = new JButton("Quit");
-////            quitButton.addActionListener(e -> System.exit(0));
-//
-////            add(openButton);
-////            add(zoomInButton);
-////            add(defaultSizeButton);
-////            add(zoomOutButton);
-////            add(quitButton);
-//
-//        }
-//    }
-
-//    private class ImageNavigationPanel extends JPanel {
-//        ImageNavigationPanel() {
-//            JButton previousButton = new JButton("Previous");
-//            previousButton.addActionListener(e -> {
-//                zoom = 1;
-//                position--;
-//                if(position < 0 || position >= files.length ) {
-//                    position = files.length -1;
-//                }
-//                try {
-//                    image = ImageIO.read(new File(files[position].getAbsolutePath()));
-//                } catch (IOException evt) {
-//                    evt.printStackTrace();
-//                    System.out.println("Could not open file.");
-//                }
-////                setSize(getPreferredSize());
-//                getParent().repaint();
-//              });
-//
-//            JButton nextButton = new JButton("Next");
-//            nextButton.addActionListener(e -> {
-//                zoom = 1;
-//                position++;
-//                if(position < 0 || position >= files.length ) {
-//                    position = 0;
-//                }
-//                try {
-//                    image = ImageIO.read(new File(files[position].getAbsolutePath()));
-//                } catch (IOException evt) {
-//                    evt.printStackTrace();
-//                    System.out.println("Could not open file.");
-//                }
-//                getParent().repaint();
-//
-//            });
-//
-////            JButton thumbnailButton = new JButton("View Thumbnails");
-//
-//            add(previousButton);
-//            add(nextButton);
-////            add(thumbnailButton);
-////
-////            thumbnailButton.setEnabled(false);
-//
-////            nextButton.getInputMap().put(KeyStroke.getKeyStroke("RIGHT"), "getNext");
-////            nextButton.getActionMap().put("getNext", nextButton.getAction());
-//        }
-//
-//    }
-
-//
-//    private class AlbumSaveAndOpenPanel extends JPanel {
-//        JButton saveAlbumButton = new JButton("Save Album");
-//        JButton openAlbumButton = new JButton("Open Album");
-//
-//        AlbumSaveAndOpenPanel() {
-//            add(saveAlbumButton);
-//            saveAlbumButton.addActionListener(e -> {
-//                zoom -= .25;
-//                getParent().repaint();
-//            });
-//            add(openAlbumButton);
-//            openAlbumButton.addActionListener(e -> {
-//                zoom -= .25;
-//                getParent().repaint();
-//            });
-//        }
-//  }
 
     void getJpegs(String fileDir) {
         File dir = new File(fileDir);
@@ -401,6 +270,9 @@ class ImageFrame extends JFrame {
         }
     }
 
+    /**
+     * A method that sets an image
+     */
     private void setImage() {
         try {
             image = ImageIO.read(new File(files[position].getAbsolutePath()));
@@ -429,7 +301,9 @@ class ImageFrame extends JFrame {
     }
 
     private void setThumbnails() {
-        if (files != null && thumbnailPosition < files.length) {
+        if (files.length > 0 && thumbnailPosition < files.length) {
+            if (thumbnailPosition < 0)
+                thumbnailPosition = 0;
             for (int i = thumbnailPosition % 4; i < 4; i++) {
                 if (thumbnailPosition < files.length) {
                     switch (i) {
