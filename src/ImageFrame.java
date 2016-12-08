@@ -42,25 +42,20 @@ class ImageFrame extends JFrame {
         setImage();
 
         JPanel imagePanel = new ImagePanel ();
-
         JPanel thumbnailPanel = new JPanel();
 
         thumbnailPanel.setVisible(false);
         thumbnailPanel.setLayout(new GridLayout(2, 2));
-        //TOdo try just adding a thumbnail
         thumbnailPanel.add(thumbnail1);
         thumbnailPanel.add(thumbnail2);
         thumbnailPanel.add(thumbnail3);
         thumbnailPanel.add(thumbnail4);
-//        setThumbnails();
 
         JPanel imageSizingPanel = new JPanel();
         imageSizingPanel.setLayout(new FlowLayout());
 
         JButton zoomInButton = new JButton("Zoom In");
         zoomInButton.addActionListener(e -> {
-//            if (zoom <= 0)
-//                zoom = .25;
             zoom += .25;
             repaint();
 
@@ -101,7 +96,7 @@ class ImageFrame extends JFrame {
             if(thumbnailPanel.isDisplayable()) {
                 position -= 7;
                 if (position < 0) {
-                    position = ((files.size() - 1) + position);
+                    position = (files.size() + position);
                 }
                 setThumbnails();
             }
@@ -138,17 +133,13 @@ class ImageFrame extends JFrame {
         thumbnailButton.addActionListener(e -> {
             imagePanel.setVisible(false);
             thumbnailPanel.setVisible(true);
-//            zoomInButton.setEnabled(false);
-//            zoomOutButton.setEnabled(false);
-//            defaultSizeButton.setEnabled(false);
             imageSizingPanel.setEnabled(false);
             imageSizingPanel.setVisible(false);
-//            thumbnailButton.setEnabled(false);
             thumbnailButton.setVisible(false);
-//            setCaptionButton.setEnabled(false);
             setCaptionButton.setVisible(false);
             getContentPane().add(thumbnailPanel);
             getContentPane().remove(imagePanel);
+            setThumbnails();
             repaint();
         });
 
@@ -159,17 +150,9 @@ class ImageFrame extends JFrame {
         thumbnail1.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
-//            zoomInButton.setEnabled(true);
-//            zoomOutButton.setEnabled(true);
-//            defaultSizeButton.setEnabled(true);
-            //            zoomInButton.setEnabled(false);
-//            zoomOutButton.setEnabled(false);
-//            defaultSizeButton.setEnabled(false);
             imageSizingPanel.setEnabled(true);
             imageSizingPanel.setVisible(true);
-//            setCaptionButton.setEnabled(true);
             setCaptionButton.setVisible(true);
-//            thumbnailButton.setEnabled(true);
             thumbnailButton.setVisible(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
@@ -180,72 +163,46 @@ class ImageFrame extends JFrame {
         thumbnail2.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
-//            zoomInButton.setEnabled(true);
-//            zoomOutButton.setEnabled(true);
-//            defaultSizeButton.setEnabled(true);
-            //            zoomInButton.setEnabled(false);
-//            zoomOutButton.setEnabled(false);
-//            defaultSizeButton.setEnabled(false);
             imageSizingPanel.setEnabled(true);
             imageSizingPanel.setVisible(true);
-//            setCaptionButton.setEnabled(true);
             setCaptionButton.setVisible(true);
-//            thumbnailButton.setEnabled(true);
             thumbnailButton.setVisible(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
-            position = files.indexOf(new File("./" + thumbnail2.getText()));
+            position = files.indexOf(thumbnail2.getText());
             setImage();
             repaint();
         });
         thumbnail3.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
-//            zoomInButton.setEnabled(true);
-//            zoomOutButton.setEnabled(true);
-//            defaultSizeButton.setEnabled(true);
-            //            zoomInButton.setEnabled(false);
-//            zoomOutButton.setEnabled(false);
-//            defaultSizeButton.setEnabled(false);
             imageSizingPanel.setEnabled(true);
             imageSizingPanel.setVisible(true);
-//            setCaptionButton.setEnabled(true);
             setCaptionButton.setVisible(true);
-//            thumbnailButton.setEnabled(true);
             thumbnailButton.setVisible(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
-            position = files.indexOf(new File("./" + thumbnail3.getText()));
+            position = files.indexOf(new File(thumbnail3.getText()));
             setImage();
             repaint();
         });
         thumbnail4.addActionListener(e -> {
             imagePanel.setVisible(true);
             thumbnailPanel.setVisible(false);
-//            zoomInButton.setEnabled(true);
-//            zoomOutButton.setEnabled(true);
-//            defaultSizeButton.setEnabled(true);
-            //            zoomInButton.setEnabled(false);
-//            zoomOutButton.setEnabled(false);
-//            defaultSizeButton.setEnabled(false);
             imageSizingPanel.setEnabled(true);
             imageSizingPanel.setVisible(true);
-//            setCaptionButton.setEnabled(true);
             setCaptionButton.setVisible(true);
-//            thumbnailButton.setEnabled(true);
             thumbnailButton.setVisible(true);
             getContentPane().add(imagePanel);
             getContentPane().remove(thumbnailPanel);
-            position = files.indexOf(new File("./" + thumbnail4.getText()));
+            position = files.indexOf(thumbnail4.getText()); //TODO check against file of names
             setImage();
             repaint();
         });
 
-        //Todo this needs some love and a refactor
         JButton openButton = new JButton("Open");
         openButton.addActionListener(event -> {
             chooser.setCurrentDirectory(new File("."));
-            // show file chooser dialog
             int result = chooser.showOpenDialog(ImageFrame.this);
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = chooser.getSelectedFile();
@@ -255,9 +212,8 @@ class ImageFrame extends JFrame {
                     e.printStackTrace();
                     System.out.println("Could not open file.");
                 }
-
                 getJpegs(chooser.getCurrentDirectory().toString());
-                //Todo Could possibly be set the same way when clickin on thumbnail
+                //Todo Could possibly be set the same way when clicking on thumbnail
                 for (int i = 0; i < files.size(); i++ ) {
                     if (files.get(i).toString().equals(chooser.getSelectedFile().toString())) {
                         position = i;
@@ -313,23 +269,17 @@ class ImageFrame extends JFrame {
                 setImage();
                 setThumbnails();
 
-            } catch (ClassNotFoundException evt) {
-                evt.printStackTrace();
-            } catch (IOException evt) {
+            } catch (ClassNotFoundException | IOException evt) {
                 evt.printStackTrace();
             }
             repaint();
         });
 
-
-        Container contentPane = getContentPane();
-        contentPane.add(imageSizingPanel, BorderLayout.NORTH);
-        contentPane.add(imageViewPanel, BorderLayout.WEST);
-        contentPane.add(imagePanel, BorderLayout.CENTER);
-        contentPane.add(imageNavigationPanel, BorderLayout.SOUTH);
-        contentPane.add(albumButtonPanel, BorderLayout.EAST);
-
-//        setCaptionButton.setEnabled(true);
+        add(imageSizingPanel, BorderLayout.NORTH);
+        add(imageViewPanel, BorderLayout.WEST);
+        add(imagePanel, BorderLayout.CENTER);
+        add(imageNavigationPanel, BorderLayout.SOUTH);
+        add(albumButtonPanel, BorderLayout.EAST);
     }
 
     void getJpegs(String fileDir) {
@@ -338,7 +288,7 @@ class ImageFrame extends JFrame {
         for (File fileName: dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"))) {
             files.add(fileName);
         }
-//        files = dir.listFiles((dir1, name) -> name.matches("\\w*(.jpeg|.jpg)"));
+//  TODO create ALBUM CLASS that stores the list of captions file names and file URLs
 
         if (files != null) {
             for (File jpeg : files) {
@@ -359,7 +309,6 @@ class ImageFrame extends JFrame {
             if (image != null) {
                 int w = 500;//image.getWidth();
                 int h = 400;//image.getHeight();
-//                image = image.getTile(500, 400);
                 g.drawImage(image, 0, 0, (int) (w * zoom), (int) (h * zoom), null);
             }
         }
@@ -382,7 +331,6 @@ class ImageFrame extends JFrame {
             System.out.println("Could not open file.");
         }
     }
-
 
     private void setThumbnails() {
         int numberToIterate = 4;
@@ -445,40 +393,10 @@ class ImageFrame extends JFrame {
         Dimension screenSize = kit.getScreenSize();
         setLocation(screenSize.width/5, screenSize.height/5);
 
-//        if (image != null && image.getWidth() > screenSize.getWidth()/2 ) {
-//            return new Dimension(image.getWidth(), screenSize.height / 2);
-//        }
-
         return new Dimension(screenSize.width/2, screenSize.height/2);
     }
 
-//    //Method to set the picture on the label
-//    private void setLabelIcon(Path path, File name){
-//        File file = new File(path+"\\"+name);
-//        java.awt.image.BufferedImage image = null;
-//
-//        try{
-//            image = ImageIO.read(file); //Read the image from the file.
-//        }catch(IOException ie){
-//            javax.swing.JOptionPane.showMessageDialog(this,"Error reading image file","Error",
-//                    javax.swing.JOptionPane.ERROR_MESSAGE);
-//        }
-//        ImageIcon icon = null;
-//        if (image != null) {
-//            icon = new ImageIcon(image);
-//        }
-//        int width = 600;
-//        int height = 400;
-//        Image img = null; //Images produced will remain a fixed size, 600 * 400
-//        if (icon != null) {
-//            img = icon.getImage().getScaledInstance(width,height, Image.SCALE_SMOOTH);
-//        }
-//
-//        ImageIcon newIcon = null; //Create a new image icon from an image object.
-//        if (img != null) {
-//            newIcon = new ImageIcon(img);
-//        }
-//
+
 //        //Now we want to create a caption for the pictures using their file names
 //        String pictureName = file.getName();
 //        int pos = pictureName.lastIndexOf("."); 	   //This removes the extensions
@@ -486,6 +404,4 @@ class ImageFrame extends JFrame {
 //        picLabel.setIcon(newIcon);					//Set the imageIcon on the Label
 //        picLabel.setText(caption);					//Set the caption
 //        picLabel.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM); //Caption appears below the image
-//
-//    }
 }
