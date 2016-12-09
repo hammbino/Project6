@@ -34,7 +34,7 @@ class ImageFrame extends JFrame {
         photographLabel.setHorizontalTextPosition(JLabel.CENTER);
         photographLabel.setHorizontalAlignment(JLabel.CENTER);
         photographLabel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        photographLabel.setText("Testing");
+//        photographLabel.setText("Testing");
 
         setSize(getPreferredSize());
         setMinimumSize(new Dimension(550,500));
@@ -248,6 +248,13 @@ class ImageFrame extends JFrame {
 
         albumButtonPanel.add(saveAlbumButton);
         saveAlbumButton.addActionListener(e -> {
+            album.setPositionWhenSaved(position);
+            if(thumbnailPanel.isDisplayable()) {
+               album.setIsThumbnailPanelDisplayed(1);
+            } else {
+                album.setIsThumbnailPanelDisplayed(0);
+            }
+
             try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream("listImages.dat")))
             {
                 out.writeObject(album);
@@ -257,18 +264,37 @@ class ImageFrame extends JFrame {
         });
 
         albumButtonPanel.add(openAlbumButton);
-//        openAlbumButton.addActionListener(e -> {
-//            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("listImages.dat"))) {
+        openAlbumButton.addActionListener(e -> {
+            try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("listImages.dat"))) {
 //                // retrieve all records into album
-////                album = in.readObject(); //TODO add method to read in file to album
-//                setImage();
-//                setThumbnails();
-//            }
-////            } catch (ClassNotFoundException | IOException evt) {
-////                evt.printStackTrace();
-////            }
-//            repaint();
-//        });
+                album = (Album) in.readObject(); //TODO add method to read in file to album
+                position = album.getPostionWhenSaved();
+                if(album.getIsThumbnailPanelDisplayed() == 1) {
+                    imagePanel.setVisible(false);
+                    thumbnailPanel.setVisible(true);
+                    imageSizingPanel.setEnabled(false);
+                    imageSizingPanel.setVisible(false);
+                    thumbnailButton.setVisible(false);
+                    setCaptionButton.setVisible(false);
+                    getContentPane().add(thumbnailPanel);
+                    getContentPane().remove(imagePanel);
+                    setThumbnails();
+                } else {
+                    imagePanel.setVisible(true);
+                    thumbnailPanel.setVisible(false);
+                    imageSizingPanel.setEnabled(true);
+                    imageSizingPanel.setVisible(true);
+                    setCaptionButton.setVisible(true);
+                    thumbnailButton.setVisible(true);
+                    getContentPane().add(imagePanel);
+                    getContentPane().remove(thumbnailPanel);
+                    setImage();
+                }
+            } catch (ClassNotFoundException | IOException evt) {
+                evt.printStackTrace();
+            }
+            repaint();
+        });
 
         add(imageSizingPanel, BorderLayout.NORTH);
         add(imageViewPanel, BorderLayout.WEST);
@@ -316,10 +342,13 @@ class ImageFrame extends JFrame {
         }
         try {
             image = ImageIO.read(album.getFileAtLocation(position));
+            //TODO add filename and caption to label.
+            photographLabel.setText(album.getName(position) + " " + album.getFileCaption(position));
         } catch (IOException evt) {
             evt.printStackTrace();
             System.out.println("Could not open file.");
         }
+
     }
 
     private void setThumbnails() {

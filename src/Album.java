@@ -14,6 +14,7 @@ class Album implements Serializable {
     private ArrayList<String> fileNames = new ArrayList<>();
     private ArrayList<String> fileCaption = new ArrayList<>();
     private int postionWhenSaved = 0;
+    private int isThumbnailPanelDisplayed = 0;
 
     Album (String fileDir) {
         File dir = new File(fileDir);
@@ -70,5 +71,11 @@ class Album implements Serializable {
         return postionWhenSaved;
     }
 
+    int getIsThumbnailPanelDisplayed() {
+        return isThumbnailPanelDisplayed;
+    }
 
+    void setIsThumbnailPanelDisplayed(int isThumbnailButtonEnabled) {
+        this.isThumbnailPanelDisplayed = isThumbnailButtonEnabled;
+    }
 }
