@@ -13,7 +13,7 @@ class Album implements Serializable {
     private ArrayList<File> files = new ArrayList<>();
     private ArrayList<String> fileNames = new ArrayList<>();
     private ArrayList<String> fileCaption = new ArrayList<>();
-    private int postionWhenSaved = 0;
+    private int positionWhenSaved = 0;
     private int isThumbnailPanelDisplayed = 0;
 
     Album (String fileDir) {
@@ -51,8 +51,13 @@ class Album implements Serializable {
         return fileNames.get(pos);
     }
 
+    int getFileLocation(File name) {
+                return files.indexOf(name);
+    }
+
     int getNameLocation(String name) {
-        return fileNames.indexOf(name);
+        String[] tokens = name.trim().split("\\s+");
+        return fileNames.indexOf(tokens[0]);
     }
 
     String getFileCaption(int pos) {
@@ -64,11 +69,11 @@ class Album implements Serializable {
     }
 
     void setPositionWhenSaved (int pos) {
-        this.postionWhenSaved = pos;
+        this.positionWhenSaved = pos;
     }
 
-    int getPostionWhenSaved() {
-        return postionWhenSaved;
+    int getPositionWhenSaved() {
+        return positionWhenSaved;
     }
 
     int getIsThumbnailPanelDisplayed() {

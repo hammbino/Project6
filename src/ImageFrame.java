@@ -42,7 +42,6 @@ class ImageFrame extends JFrame {
         setImage();
 
         JPanel imagePanel = new ImagePanel ();
-//        imagePanel.add(photographLabel, BOTTOM_ALIGNMENT);
         JPanel thumbnailPanel = new JPanel();
 
         thumbnailPanel.setVisible(false);
@@ -59,7 +58,6 @@ class ImageFrame extends JFrame {
         zoomInButton.addActionListener(e -> {
             zoom += .25;
             repaint();
-
         });
 
         JButton defaultSizeButton = new JButton("100%");
@@ -74,7 +72,8 @@ class ImageFrame extends JFrame {
                 zoom -= .25;
                 repaint();
             } else {
-                System.out.println("Maximum zoom out reached"); //TODO add dialogue box
+                JOptionPane.showMessageDialog(this, "Maximum zoom out reached", "Image Too Small", JOptionPane.ERROR_MESSAGE);
+                System.out.println("Maximum zoom out reached");
             }
         });
 
@@ -129,8 +128,17 @@ class ImageFrame extends JFrame {
         imageNavigationPanel.add(nextButton);
 
         JButton setCaptionButton = new JButton("Set Caption");
-        JButton thumbnailButton = new JButton("View Thumbnails");
+        setCaptionButton.addActionListener(e -> {
+            //TODO Get Caption
+            String s = JOptionPane.showInputDialog(this, "Caption for Image:", null, JOptionPane.PLAIN_MESSAGE);
+            if ((s != null) && (s.length() > 0)) {
+                album.setFileCaption(s, position);
+                setImage();
+            }
+            repaint();
+        });
 
+        JButton thumbnailButton = new JButton("View Thumbnails");
         thumbnailButton.addActionListener(e -> {
             imagePanel.setVisible(false);
             thumbnailPanel.setVisible(true);
@@ -142,10 +150,6 @@ class ImageFrame extends JFrame {
             getContentPane().remove(imagePanel);
             setThumbnails();
             repaint();
-        });
-
-        setCaptionButton.addActionListener(e -> {
-            //TODO Get Caption
         });
 
         thumbnail1.addActionListener(e -> {
@@ -214,13 +218,15 @@ class ImageFrame extends JFrame {
                     System.out.println("Could not open file.");
                 }
                 getJpegs(chooser.getCurrentDirectory().toString());
-                position = album.getNameLocation(chooser.getSelectedFile().toString());
-
+                position = album.getFileLocation(chooser.getSelectedFile());
                 if(thumbnailPanel.isDisplayable()) {
                     setThumbnails();
+                } else {
+                    setImage();
                 }
                 repaint();
             } else if (result == JFileChooser.CANCEL_OPTION) {
+                JOptionPane.showMessageDialog(this, "No File Selected", "No Files", JOptionPane.ERROR_MESSAGE);
                 System.out.println("No File Selected"); //TODO add dialogue box
             }
         });
@@ -248,6 +254,9 @@ class ImageFrame extends JFrame {
 
         albumButtonPanel.add(saveAlbumButton);
         saveAlbumButton.addActionListener(e -> {
+//            int result = chooser.showOpenDialog(ImageFrame.this);
+//            if (result == JFileChooser.APPROVE_OPTION) {
+//                File selectedFile = chooser.getSelectedFile();
             album.setPositionWhenSaved(position);
             if(thumbnailPanel.isDisplayable()) {
                album.setIsThumbnailPanelDisplayed(1);
@@ -267,8 +276,8 @@ class ImageFrame extends JFrame {
         openAlbumButton.addActionListener(e -> {
             try (ObjectInputStream in = new ObjectInputStream(new FileInputStream("listImages.dat"))) {
 //                // retrieve all records into album
-                album = (Album) in.readObject(); //TODO add method to read in file to album
-                position = album.getPostionWhenSaved();
+                album = (Album) in.readObject();
+                position = album.getPositionWhenSaved();
                 if(album.getIsThumbnailPanelDisplayed() == 1) {
                     imagePanel.setVisible(false);
                     thumbnailPanel.setVisible(true);
@@ -304,8 +313,10 @@ class ImageFrame extends JFrame {
     }
 
     private void getJpegs(String fileDir) {
+        //TODO
         album = new Album(fileDir);
         if(album.getAlbumSize() < 1) {
+            JOptionPane.showMessageDialog(this, "There were no images in current directory", "No Files", JOptionPane.ERROR_MESSAGE);
             System.out.println("There were no images in current directory.");
         }
     }
@@ -343,7 +354,7 @@ class ImageFrame extends JFrame {
         try {
             image = ImageIO.read(album.getFileAtLocation(position));
             //TODO add filename and caption to label.
-            photographLabel.setText(album.getName(position) + " " + album.getFileCaption(position));
+            photographLabel.setText("<html>" +  album.getName(position) + "<br>" + album.getFileCaption(position) + "</html>");
         } catch (IOException evt) {
             evt.printStackTrace();
             System.out.println("Could not open file.");
@@ -370,29 +381,28 @@ class ImageFrame extends JFrame {
                 Image tempImage = thumbnailImage.getImage();
                 Image scaledImage = tempImage.getScaledInstance(80, 60, Image.SCALE_SMOOTH);
                 thumbnailImage.setImage(scaledImage);
-                String pictureName = album.getName(position);
                 switch (i) {
                     case 0:
                         thumbnail1.setIcon(thumbnailImage);
-                        thumbnail1.setText(pictureName);
+                        thumbnail1.setText("<html>" +  album.getName(position) + "<br>" + album.getFileCaption(position) + "</html>");
                         thumbnail1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
                         thumbnail1.setHorizontalTextPosition(SwingConstants.CENTER);
                         break;
                     case 1:
                         thumbnail2.setIcon(thumbnailImage);
-                        thumbnail2.setText(pictureName);
+                        thumbnail2.setText("<html>" +  album.getName(position) + "<br>" + album.getFileCaption(position) + "</html>");
                         thumbnail2.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
                         thumbnail2.setHorizontalTextPosition(SwingConstants.CENTER);
                         break;
                     case 2:
                         thumbnail3.setIcon(thumbnailImage);
-                        thumbnail3.setText(pictureName);
+                        thumbnail3.setText("<html>" +  album.getName(position) + "<br>" + album.getFileCaption(position) + "</html>");
                         thumbnail3.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
                         thumbnail3.setHorizontalTextPosition(SwingConstants.CENTER);
                         break;
                     case 3:
                         thumbnail4.setIcon(thumbnailImage);
-                        thumbnail4.setText(pictureName);
+                        thumbnail4.setText("<html>" +  album.getName(position) + "<br>" + album.getFileCaption(position) + "</html>");
                         thumbnail4.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
                         thumbnail4.setHorizontalTextPosition(SwingConstants.CENTER);
                         break;
@@ -412,6 +422,6 @@ class ImageFrame extends JFrame {
         Dimension screenSize = kit.getScreenSize();
         setLocation(screenSize.width/5, screenSize.height/5);
 
-        return new Dimension(screenSize.width/2, screenSize.height/2);
+        return new Dimension(screenSize.width/2, (screenSize.height/2) + 100);
     }
 }
